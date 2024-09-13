@@ -34,27 +34,27 @@ class OurbitExchange(ExchangePyBase):
 
     def __init__(self,
                  client_config_map: "ClientConfigAdapter",
-                 mexc_api_key: str,
-                 mexc_api_secret: str,
+                 ourbit_api_key: str,
+                 ourbit_api_secret: str,
                  trading_pairs: Optional[List[str]] = None,
                  trading_required: bool = True,
                  domain: str = CONSTANTS.DEFAULT_DOMAIN,
                  ):
-        self.api_key = mexc_api_key
-        self.secret_key = mexc_api_secret
+        self.api_key = ourbit_api_key
+        self.secret_key = ourbit_api_secret
         self._domain = domain
         self._trading_required = trading_required
         self._trading_pairs = trading_pairs
-        self._last_trades_poll_mexc_timestamp = 1.0
+        self._last_trades_poll_ourbit_timestamp = 1.0
         super().__init__(client_config_map)
 
     @staticmethod
-    def mexc_order_type(order_type: OrderType) -> str:
+    def ourbit_order_type(order_type: OrderType) -> str:
         return order_type.name.upper()
 
     @staticmethod
-    def to_hb_order_type(mexc_type: str) -> OrderType:
-        return OrderType[mexc_type]
+    def to_hb_order_type(ourbit_type: str) -> OrderType:
+        return OrderType[ourbit_type]
 
     @property
     def authenticator(self):
@@ -66,9 +66,9 @@ class OurbitExchange(ExchangePyBase):
     @property
     def name(self) -> str:
         if self._domain == "com":
-            return "mexc"
+            return "ourbit"
         else:
-            return f"mexc_{self._domain}"
+            return f"ourbit_{self._domain}"
 
     @property
     def rate_limits_rules(self):
@@ -176,7 +176,7 @@ class OurbitExchange(ExchangePyBase):
                            **kwargs) -> Tuple[str, float]:
         order_result = None
         amount_str = f"{amount:f}"
-        type_str = OurbitExchange.mexc_order_type(order_type)
+        type_str = OurbitExchange.ourbit_order_type(order_type)
         side_str = CONSTANTS.SIDE_BUY if trade_type is TradeType.BUY else CONSTANTS.SIDE_SELL
         symbol = await self.exchange_symbol_associated_to_pair(trading_pair=trading_pair)
         api_params = {"symbol": symbol,
@@ -379,8 +379,8 @@ class OurbitExchange(ExchangePyBase):
 
         if (long_interval_current_tick > long_interval_last_tick
                 or (self.in_flight_orders and small_interval_current_tick > small_interval_last_tick)):
-            query_time = int(self._last_trades_poll_mexc_timestamp * 1e3)
-            self._last_trades_poll_mexc_timestamp = self._time_synchronizer.time()
+            query_time = int(self._last_trades_poll_ourbit_timestamp * 1e3)
+            self._last_trades_poll_ourbit_timestamp = self._time_synchronizer.time()
             order_by_exchange_id_map = {}
             for order in self._order_tracker.all_fillable_orders.values():
                 order_by_exchange_id_map[order.exchange_order_id] = order
