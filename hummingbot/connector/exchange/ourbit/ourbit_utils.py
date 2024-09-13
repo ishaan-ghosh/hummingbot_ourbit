@@ -8,11 +8,11 @@ from hummingbot.client.config.config_data_types import BaseConnectorConfigMap, C
 from hummingbot.core.data_type.trade_fee import TradeFeeSchema
 
 CENTRALIZED = True
-EXAMPLE_PAIR = "ZRX-ETH"
+EXAMPLE_PAIR = "BTC-USDT"
 
 DEFAULT_FEES = TradeFeeSchema(
-    maker_percent_fee_decimal=Decimal("0.000"),
-    taker_percent_fee_decimal=Decimal("0.000"),
+    maker_percent_fee_decimal=Decimal("0.002"),
+    taker_percent_fee_decimal=Decimal("0.002"),
     buy_percent_fee_deducted_from_returns=True
 )
 
