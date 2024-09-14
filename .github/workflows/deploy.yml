@@ -1,0 +1,30 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]  # Adjust this to your needs
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted  # This specifies to use your self-hosted runner
+    
+    env:
+      PORT: 8000
+      GUNICORN_WORKERS: 4
+
+    steps:
+    #- name: Checkout code
+    #  uses: actions/checkout@v2
+
+    - name: git pull
+      run: cd /root/hummingbot_ourbit && git pull
+
+    - name: Build Docker image
+      run: cd /root/hummingbot_ourbit && docker compose build --no-cache
+
+    - name: Restart Docker Compose
+      run: |
+        cd /root/hummingbot_ourbi
+        docker compose down
+        docker compose up -d
+
