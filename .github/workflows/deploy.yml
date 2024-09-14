@@ -20,7 +20,7 @@ jobs:
       run: cd /home/ubuntu/hummingbot_ourbit && git pull
 
     - name: Build Docker image
-      run: cd /home/ubuntu/hummingbot_ourbit && docker compose build --no-cache
+      run: cd /home/ubuntu/hummingbot_ourbit && docker compose build
 
     - name: Restart Docker Compose
       run: |
