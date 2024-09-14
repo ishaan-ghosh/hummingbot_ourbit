@@ -17,14 +17,14 @@ jobs:
     #  uses: actions/checkout@v2
 
     - name: git pull
-      run: cd /root/hummingbot_ourbit && git pull
+      run: cd /home/ubuntu/hummingbot_ourbit && git pull
 
     - name: Build Docker image
-      run: cd /root/hummingbot_ourbit && docker compose build --no-cache
+      run: cd /home/ubuntu/hummingbot_ourbit && docker compose build --no-cache
 
     - name: Restart Docker Compose
       run: |
-        cd /root/hummingbot_ourbi
+        cd /home/ubuntu/hummingbot_ourbit
         docker compose down
         docker compose up -d
 
