@@ -44,10 +44,10 @@ class OurbitOrderBook(OrderBook):
         if metadata:
             msg.update(metadata)
         return OrderBookMessage(OrderBookMessageType.DIFF, {
-            "trading_pair": msg["s"],
-            "update_id": msg["t"],
-            "bids": [[i["p"], i["v"]] for i in msg["d"].get("asks", [])],
-            "asks": [[i["p"], i["v"]] for i in msg["d"].get("bids", [])],
+            "trading_pair": msg["trading_pair"],
+            "update_id": int(msg['d']["r"]),
+            "bids": [[i['p'], i['v']] for i in msg['d'].get("bids", [])],
+            "asks": [[i['p'], i['v']] for i in msg['d'].get("asks", [])],
         }, timestamp=timestamp)
 
     @classmethod
@@ -72,4 +72,4 @@ class OurbitOrderBook(OrderBook):
             "update_id": ts,
             "price": msg["p"],
             "amount": msg["v"]
-        }, timestamp=ts * 1e-3)
+        }, timestamp=ts)
