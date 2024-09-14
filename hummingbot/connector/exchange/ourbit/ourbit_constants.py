@@ -8,26 +8,26 @@ HBOT_ORDER_ID_PREFIX = "HUMBOT"
 MAX_ORDER_ID_LEN = 32
 
 # Base URL
-REST_URL = "https://api.ourbit.com/api" 
-WSS_URL =  "wss://wbs.ourbit.com/ws"
+REST_URL = "https://api.ourbit.com/api/" 
+WSS_URL =  "wss://wbs.ourbit.com/ws/"
  
-PUBLIC_API_VERSION = "v3"
-PRIVATE_API_VERSION = "v3"
+PUBLIC_API_VERSION = "v3/"
+PRIVATE_API_VERSION = "v3/"
 
 # Public API endpoints or MexcClient function
-TICKER_PRICE_CHANGE_PATH_URL = "/ticker/24hr"
-TICKER_BOOK_PATH_URL = "/ticker/bookTicker"
-EXCHANGE_INFO_PATH_URL = "/exchangeInfo"
-SUPPORTED_SYMBOL_PATH_URL = "/defaultSymbols"
-PING_PATH_URL = "/ping"
-SNAPSHOT_PATH_URL = "/depth"
-SERVER_TIME_PATH_URL = "/time"
+TICKER_PRICE_CHANGE_PATH_URL = "ticker/24hr"
+TICKER_BOOK_PATH_URL = "ticker/bookTicker"
+EXCHANGE_INFO_PATH_URL = "exchangeInfo"
+SUPPORTED_SYMBOL_PATH_URL = "defaultSymbols"
+PING_PATH_URL = "ping"
+SNAPSHOT_PATH_URL = "depth"
+SERVER_TIME_PATH_URL = "time"
 
 # Private API endpoints or MexcClient function
-ACCOUNTS_PATH_URL = "/account"
-MY_TRADES_PATH_URL = "/myTrades"
-ORDER_PATH_URL = "/order"
-OURBIT_USER_STREAM_PATH_URL = "/userDataStream"
+ACCOUNTS_PATH_URL = "account"
+MY_TRADES_PATH_URL = "myTrades"
+ORDER_PATH_URL = "order"
+OURBIT_USER_STREAM_PATH_URL = "userDataStream"
 
 WS_HEARTBEAT_TIME_INTERVAL = 30
 
