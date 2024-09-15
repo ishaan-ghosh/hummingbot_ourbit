@@ -1,4 +1,4 @@
-# mexc_constants.py
+# ourbit_constants.py
 from hummingbot.core.api_throttler.data_types import LinkedLimitWeightPair, RateLimit
 from hummingbot.core.data_type.in_flight_order import OrderState
 
@@ -9,7 +9,7 @@ MAX_ORDER_ID_LEN = 32
 
 # Base URL
 REST_URL = "https://api.ourbit.com/api/" 
-WSS_URL =  "wss://wbs.ourbit.com/ws/"
+WSS_URL =  "wss://wbs.ourbit.com/ws"
  
 PUBLIC_API_VERSION = "v3/"
 PRIVATE_API_VERSION = "v3/"
@@ -29,7 +29,7 @@ MY_TRADES_PATH_URL = "myTrades"
 ORDER_PATH_URL = "order"
 OURBIT_USER_STREAM_PATH_URL = "userDataStream"
 
-WS_HEARTBEAT_TIME_INTERVAL = 30
+WS_HEARTBEAT_TIME_INTERVAL = 30.0
 
 # Ourbit params
 

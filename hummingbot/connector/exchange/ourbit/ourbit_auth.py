@@ -1,4 +1,4 @@
-# mexc_auth.py
+# ourbit_auth.py
 import hashlib
 import hmac
 import json

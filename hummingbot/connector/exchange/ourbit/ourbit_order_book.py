@@ -1,4 +1,4 @@
-# mexc_order_book.py
+# ourbit_order_book.py
 from typing import Dict, Optional
 
 from hummingbot.core.data_type.common import TradeType

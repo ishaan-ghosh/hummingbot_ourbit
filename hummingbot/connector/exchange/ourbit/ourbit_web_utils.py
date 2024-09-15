@@ -1,4 +1,4 @@
-# mexc_web_utils.py
+# ourbit_web_utils.py
 from typing import Callable, Optional
 
 import hummingbot.connector.exchange.ourbit.ourbit_constants as CONSTANTS

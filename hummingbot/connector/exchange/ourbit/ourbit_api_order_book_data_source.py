@@ -1,4 +1,4 @@
-# mexc_api_order_book_data_source.py
+# ourbit_api_order_book_data_source.py
 import asyncio
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
@@ -79,22 +79,15 @@ class OurbitAPIOrderBookDataSource(OrderBookTrackerDataSource):
                 depth_params.append(f"spot@public.increase.depth.v3.api@{symbol}")
             payload = {
                 "method": "SUBSCRIPTION",
-                "params": trade_params,
+                "params": trade_params + depth_params,
                 "id": 1
             }
-            subscribe_trade_request: WSJSONRequest = WSJSONRequest(payload=payload)
+            subscribe_request: WSJSONRequest = WSJSONRequest(payload=payload)
 
-            payload = {
-                "method": "SUBSCRIPTION",
-                "params": depth_params,
-                "id": 2
-            }
-            subscribe_orderbook_request: WSJSONRequest = WSJSONRequest(payload=payload)
-
-            await ws.send(subscribe_trade_request)
-            await ws.send(subscribe_orderbook_request)
+            await ws.send(subscribe_request)
 
             self.logger().info("Subscribed to public order book and trade channels...")
+
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -104,11 +97,54 @@ class OurbitAPIOrderBookDataSource(OrderBookTrackerDataSource):
             )
             raise
 
+    async def _unsubscribe_channels(self, ws: WSAssistant):
+        try:
+            trade_params = []
+            depth_params = []
+            for trading_pair in self._trading_pairs:
+                symbol = await self._connector.exchange_symbol_associated_to_pair(trading_pair=trading_pair)
+                trade_params.append(f"spot@public.deals.v3.api@{symbol}")
+                depth_params.append(f"spot@public.increase.depth.v3.api@{symbol}")
+            
+            payload = {
+                "method": "UNSUBSCRIPTION",
+                "params": trade_params + depth_params,
+                "id": 1
+            }
+            unsubscribe_request: WSJSONRequest = WSJSONRequest(payload=payload)
+
+            await ws.send(unsubscribe_request)
+
+            self.logger().info("Unsubscribed from public order book and trade channels...")
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            self.logger().error(
+                "Unexpected error occurred unsubscribing from order book trading and delta streams...",
+                exc_info=True
+            )
+            raise
+
     async def _connected_websocket_assistant(self) -> WSAssistant:
         ws: WSAssistant = await self._api_factory.get_ws_assistant()
-        await ws.connect(ws_url=CONSTANTS.WSS_URL.format(self._domain),
-                         ping_timeout=CONSTANTS.WS_HEARTBEAT_TIME_INTERVAL)
+        await ws.connect(ws_url=CONSTANTS.WSS_URL,
+                        ping_timeout=CONSTANTS.WS_HEARTBEAT_TIME_INTERVAL)
+        
+        # Send subscription message
+        subscribe_message = {
+            "method": "SUBSCRIPTION",
+            "params": [
+                f"spot@public.deals.v3.api@{symbol}" for symbol in self._trading_pairs
+            ]
+        }
+        await ws.send(WSJSONRequest(payload=subscribe_message))
+        
         return ws
+    
+    async def _ping_websocket(self, ws: WSAssistant):
+        payload = {"method": "PING"}
+        ping_request: WSJSONRequest = WSJSONRequest(payload=payload)
+        await ws.send(ping_request)
 
     async def _order_book_snapshot(self, trading_pair: str) -> OrderBookMessage:
         snapshot: Dict[str, Any] = await self._request_order_book_snapshot(trading_pair)

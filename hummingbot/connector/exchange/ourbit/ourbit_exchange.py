@@ -1,4 +1,4 @@
-# mexc_exchange.py
+# ourbit_exchange.py
 import asyncio
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from bidict import bidict
 
 from hummingbot.connector.constants import s_decimal_NaN
-from hummingbot.connector.exchange.ourbit import ourbit_constants as CONSTANTS, ourbit_utils, ourbit_web_utils as web_utils
+from hummingbot.connector.exchange.ourbit import (
+    ourbit_constants as CONSTANTS,
+    ourbit_utils,
+    ourbit_web_utils as web_utils,
+)
 from hummingbot.connector.exchange.ourbit.ourbit_api_order_book_data_source import OurbitAPIOrderBookDataSource
 from hummingbot.connector.exchange.ourbit.ourbit_api_user_stream_data_source import OurbitAPIUserStreamDataSource
 from hummingbot.connector.exchange.ourbit.ourbit_auth import OurbitAuth

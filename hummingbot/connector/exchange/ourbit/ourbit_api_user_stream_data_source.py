@@ -1,10 +1,11 @@
-# mexc_api_user_stream_data_source.py
+# ourbit_api_user_stream_data_source.py
 import asyncio
 import time
 from typing import TYPE_CHECKING, List, Optional
 
 from hummingbot.connector.exchange.ourbit import ourbit_constants as CONSTANTS, ourbit_web_utils as web_utils
 from hummingbot.connector.exchange.ourbit.ourbit_auth import OurbitAuth
+from hummingbot.core.data_type.order_book_message import OrderBookMessage
 from hummingbot.core.data_type.user_stream_tracker_data_source import UserStreamTrackerDataSource
 from hummingbot.core.utils.async_utils import safe_ensure_future
 from hummingbot.core.web_assistant.connections.data_types import RESTMethod, WSJSONRequest
@@ -38,14 +39,11 @@ class OurbitAPIUserStreamDataSource(UserStreamTrackerDataSource):
         self._last_listen_key_ping_ts = 0
 
     async def _connected_websocket_assistant(self) -> WSAssistant:
-        """
-        Creates an instance of WSAssistant connected to the exchange
-        """
         self._manage_listen_key_task = safe_ensure_future(self._manage_listen_key_task_loop())
         await self._listen_key_initialized_event.wait()
 
         ws: WSAssistant = await self._get_ws_assistant()
-        url = f"{CONSTANTS.WSS_URL.format(self._domain)}?listenKey={self._current_listen_key}"
+        url = f"{CONSTANTS.WSS_URL}?listenKey={self._current_listen_key}"
         await ws.connect(ws_url=url, ping_timeout=CONSTANTS.WS_HEARTBEAT_TIME_INTERVAL)
         return ws
 
@@ -165,6 +163,46 @@ class OurbitAPIUserStreamDataSource(UserStreamTrackerDataSource):
         }
         ping_request: WSJSONRequest = WSJSONRequest(payload=payload)
         await websocket_assistant.send(ping_request)
+
+    async def listen_for_trades(self, ev_loop: asyncio.AbstractEventLoop, output: asyncio.Queue):
+        while True:
+            try:
+                async with self._api_factory.get_ws_assistant() as ws:
+                    await self._subscribe_channels(ws)
+                    async for ws_response in self._iter_messages(ws):
+                        data = ws_response.data
+                        if "c" in data and data["c"] == CONSTANTS.TRADE_EVENT_TYPE:
+                            trade_msg: OrderBookMessage = self._parse_trade_message(data)
+                            output.put_nowait(trade_msg)
+                        await self._ping_websocket(ws)
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                self.logger().error(
+                    "Unexpected error with WebSocket connection. Retrying after 30 seconds...",
+                    exc_info=True
+                )
+                await asyncio.sleep(30.0)
+
+    async def listen_for_order_book_diffs(self, ev_loop: asyncio.AbstractEventLoop, output: asyncio.Queue):
+        while True:
+            try:
+                async with self._api_factory.get_ws_assistant() as ws:
+                    await self._subscribe_channels(ws)
+                    async for ws_response in self._iter_messages(ws):
+                        data = ws_response.data
+                        if "c" in data and data["c"] == CONSTANTS.DIFF_EVENT_TYPE:
+                            diff_msg: OrderBookMessage = self._parse_order_book_diff_message(data)
+                            output.put_nowait(diff_msg)
+                        await self._ping_websocket(ws)
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                self.logger().error(
+                    "Unexpected error with WebSocket connection. Retrying after 30 seconds...",
+                    exc_info=True
+                )
+                await asyncio.sleep(30.0)
 
     async def _on_user_stream_interruption(self, websocket_assistant: Optional[WSAssistant]):
         await super()._on_user_stream_interruption(websocket_assistant=websocket_assistant)

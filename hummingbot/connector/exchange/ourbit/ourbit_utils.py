@@ -1,4 +1,4 @@
-# mexc_utils.py
+# ourbit_utils.py
 from decimal import Decimal
 from typing import Any, Dict
 
