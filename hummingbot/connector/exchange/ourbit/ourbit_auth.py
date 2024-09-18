@@ -43,23 +43,22 @@ class OurbitAuth(AuthBase):
         """
         return request  # pass-through
 
-    def add_auth_to_params(self,
-                           params: Dict[str, Any]):
+    def add_auth_to_params(self, params: Dict[str, Any]):
         timestamp = int(self.time_provider.time() * 1e3)
-
         request_params = OrderedDict(params or {})
-        request_params["timestamp"] = timestamp
-
-        signature = self._generate_signature(params=request_params)
+        if "timestamp" not in request_params:
+            request_params["timestamp"] = timestamp
+        query_string = '&'.join([f"{k}={v}" for k, v in request_params.items()])
+        signature = self._generate_signature(query_string)
         request_params["signature"] = signature
-
         return request_params
 
     def header_for_authentication(self) -> Dict[str, str]:
         return {"X-OURBIT-APIKEY": self.api_key, "Content-Type": "application/json"}
 
-    def _generate_signature(self, params: Dict[str, Any]) -> str:
-
-        encoded_params_str = urlencode(params)
-        digest = hmac.new(self.secret_key.encode("utf8"), encoded_params_str.encode("utf8"), hashlib.sha256).hexdigest()
-        return digest
+    def _generate_signature(self, query_string: str) -> str:
+        return hmac.new(
+            self.secret_key.encode('utf-8'),
+            query_string.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()

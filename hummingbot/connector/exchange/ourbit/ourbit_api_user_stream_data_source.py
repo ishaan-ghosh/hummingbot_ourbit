@@ -107,16 +107,28 @@ class OurbitAPIUserStreamDataSource(UserStreamTrackerDataSource):
     async def _ping_listen_key(self) -> bool:
         rest_assistant = await self._api_factory.get_rest_assistant()
         try:
+            # Create the parameters for the request
+            timestamp = int(self._time_synchronizer.time() * 1e3)
+            params = {
+                "listenKey": self._current_listen_key,
+                "timestamp": timestamp
+            }
+
+            # Generate the signature
+            signature = self._auth._generate_signature(params)
+            params["signature"] = signature
+
+            # Make the authenticated request
             data = await rest_assistant.execute_request(
                 url=web_utils.public_rest_url(path_url=CONSTANTS.OURBIT_USER_STREAM_PATH_URL, domain=self._domain),
-                params={"listenKey": self._current_listen_key},
+                params=params,
                 method=RESTMethod.PUT,
+                is_auth_required=True,
                 return_err=True,
-                throttler_limit_id=CONSTANTS.OURBIT_USER_STREAM_PATH_URL,
-                headers=self._auth.header_for_authentication()
+                throttler_limit_id=CONSTANTS.OURBIT_USER_STREAM_PATH_URL
             )
 
-            if "code" in data:
+            if isinstance(data, dict) and "code" in data:
                 self.logger().warning(f"Failed to refresh the listen key {self._current_listen_key}: {data}")
                 return False
 

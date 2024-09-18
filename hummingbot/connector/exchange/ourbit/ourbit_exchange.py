@@ -171,39 +171,34 @@ class OurbitExchange(ExchangePyBase):
         return DeductedFromReturnsTradeFee(percent=self.estimate_fee_pct(is_maker))
 
     async def _place_order(self,
-                           order_id: str,
-                           trading_pair: str,
-                           amount: Decimal,
-                           trade_type: TradeType,
-                           order_type: OrderType,
-                           price: Decimal,
-                           **kwargs) -> Tuple[str, float]:
+                       order_id: str,
+                       trading_pair: str,
+                       amount: Decimal,
+                       trade_type: TradeType,
+                       order_type: OrderType,
+                       price: Decimal,
+                       **kwargs) -> Tuple[str, float]:
         order_result = None
         amount_str = f"{amount:f}"
         type_str = OurbitExchange.ourbit_order_type(order_type)
         side_str = CONSTANTS.SIDE_BUY if trade_type is TradeType.BUY else CONSTANTS.SIDE_SELL
         symbol = await self.exchange_symbol_associated_to_pair(trading_pair=trading_pair)
-        api_params = {"symbol": symbol,
-                      "side": side_str,
-                      "quantity": amount_str,
-                      # "quoteOrderQty": amount_str,
-                      "type": type_str,
-                      "newClientOrderId": order_id}
+        api_params = {
+            "symbol": symbol,
+            "side": side_str,
+            "type": type_str,
+            "newClientOrderId": order_id,
+            "timestamp": int(self._time_synchronizer.time() * 1e3),
+        }
         if order_type.is_limit_type():
-            price_str = f"{price:f}"
-            api_params["price"] = price_str
+            api_params["quantity"] = amount_str
+            api_params["price"] = f"{price:f}"
         else:
             if trade_type == TradeType.BUY:
-                if price.is_nan():
-                    price = self.get_price_for_volume(
-                        trading_pair,
-                        True,
-                        amount
-                    ).result_price
-                del api_params['quantity']
-                api_params.update({
-                    "quoteOrderQty": f"{price * amount:f}",
-                })
+                api_params["quoteOrderQty"] = f"{price * amount:f}"
+            else:
+                api_params["quantity"] = amount_str
+
         if order_type == OrderType.LIMIT:
             api_params["timeInForce"] = CONSTANTS.TIME_IN_FORCE_GTC
 
