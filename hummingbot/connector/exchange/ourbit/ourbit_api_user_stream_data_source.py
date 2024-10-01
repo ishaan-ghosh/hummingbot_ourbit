@@ -113,7 +113,7 @@ class OurbitAPIUserStreamDataSource(UserStreamTrackerDataSource):
 
             data = await rest_assistant.execute_request(
                 url=web_utils.public_rest_url(path_url=CONSTANTS.OURBIT_USER_STREAM_PATH_URL, domain=self._domain),
-                data=params,  
+                params=params,  
                 method=RESTMethod.PUT,
                 headers=self._auth.header_for_authentication(),
                 is_auth_required=True,
@@ -121,7 +121,7 @@ class OurbitAPIUserStreamDataSource(UserStreamTrackerDataSource):
                 throttler_limit_id=CONSTANTS.OURBIT_USER_STREAM_PATH_URL
             )
 
-            if isinstance(data, dict) and "code" in data:
+            if isinstance(data, dict) and "listenKey" not in data:
                 self.logger().warning(f"Failed to refresh the listen key {self._current_listen_key}: {data}")
                 return False
 
